@@ -152,7 +152,10 @@ export function ChatWidget() {
   // Umsatzzahlen des Betriebs beantwortet, gibt genau die Daten heraus, die die
   // Schranke schützen soll. Der Hook läuft vorher, der Ausstieg erst hier —
   // ein bedingter Hook wäre ein Regelbruch.
-  if (pathname === "/zugang") return null;
+  // /sprache aus einem anderen Grund: die Seite geht als eigenstaendige
+  // Vorfuehrung an AGRO-STAHL. Ein Assistent, der zu Zahlen der erfundenen
+  // Bauer GmbH antwortet, waere dort nur verwirrend.
+  if (pathname === "/zugang" || pathname === "/sprache") return null;
 
   return (
     <>
