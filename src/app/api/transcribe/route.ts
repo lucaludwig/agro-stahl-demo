@@ -12,12 +12,23 @@
  * für einen Erfolg.
  */
 
+import { auth } from "@/lib/auth";
+import { hasPermission } from "@/lib/roles";
+
 const WHISPER_URL = process.env.WHISPER_URL;
 const WHISPER_TOKEN = process.env.WHISPER_TOKEN;
 
 export const maxDuration = 120;
 
 export async function POST(request: Request) {
+  // Zweite Tür neben dem Proxy, siehe /api/anfrage: diese Route belastet den
+  // Whisper-Container auf dem Prod-Server.
+  const session = await auth();
+  const rolle = session?.user?.role;
+  if (!rolle || !hasPermission(rolle, "anfragen:create")) {
+    return Response.json({ error: "Nicht berechtigt." }, { status: 401 });
+  }
+
   if (!WHISPER_URL || !WHISPER_TOKEN) {
     return Response.json(
       { error: "Spracherkennung ist auf diesem Deployment nicht konfiguriert." },

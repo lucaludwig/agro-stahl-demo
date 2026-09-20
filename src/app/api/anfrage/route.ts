@@ -10,6 +10,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
+import { auth } from "@/lib/auth";
+import { hasPermission } from "@/lib/roles";
 
 export const maxDuration = 120;
 
@@ -85,6 +87,16 @@ Regeln:
 - Angebot nur, wenn ausdrücklich eines verlangt wurde. Im Normalfall ist es ein Auftrag.`;
 
 export async function POST(request: Request) {
+  // Der Proxy hält Unangemeldete schon vorher ab. Die Prüfung hier steht
+  // trotzdem: sie kostet nichts und hängt nicht daran, dass jemand später den
+  // Matcher-Ausdruck im Proxy anfasst. Ein Aufruf dieser Route kostet echtes
+  // Geld beim Modell — das ist keine Stelle für eine einzige Tür.
+  const session = await auth();
+  const rolle = session?.user?.role;
+  if (!rolle || !hasPermission(rolle, "anfragen:create")) {
+    return Response.json({ error: "Nicht berechtigt." }, { status: 401 });
+  }
+
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json(
       { error: "Auswertung ist auf diesem Deployment nicht konfiguriert." },

@@ -53,7 +53,7 @@ export function WerkflowShell({ children }: { children: React.ReactNode }) {
   // /sprache aus demselben Grund: die Seite geht als eigenständige Vorführung
   // an AGRO-STAHL. Eine Kopfleiste mit "Bauer GmbH" und Modulen eines
   // Installateurs hätte dort nichts zu suchen.
-  if (pathname === "/zugang" || pathname === "/sprache") {
+  if (pathname.startsWith("/auth") || pathname === "/sprache") {
     return <div className="min-h-dvh">{children}</div>;
   }
 

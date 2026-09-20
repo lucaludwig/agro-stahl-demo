@@ -1,13 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // ponytail: Shell (public/start.html) ist die Root, Bauer-Mock lebt unter /klassik
-  async rewrites() {
-    return {
-      beforeFiles: [{ source: "/", destination: "/start.html" }],
-      afterFiles: [],
-      fallback: [],
-    };
+  // Die Wurzel führt in die Vorführung. Vorher stand hier ein Rewrite auf
+  // public/start.html, die Übersichtsseite der werkflow-Demo — in einer
+  // Vorführung für AGRO-STAHL ist die Sprach-Erfassung der Einstieg.
+  async redirects() {
+    return [{ source: "/", destination: "/sprache", permanent: false }];
   },
 };
 

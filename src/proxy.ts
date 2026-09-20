@@ -1,32 +1,52 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { COOKIE_NAME, zugangNoetig } from "@/lib/demo-zugang";
+import { getToken } from "next-auth/jwt";
 
 /**
- * Zugangsschranke vor der Demo. In Next 16 heißt Middleware "Proxy", die
+ * Anmeldeschranke vor der Vorführung. In Next 16 heißt Middleware "Proxy", die
  * Konvention ist eine einzige Datei auf Höhe von `app` (also hier src/proxy.ts).
  *
- * Die Entscheidung selbst liegt in `lib/demo-zugang.ts` und ist dort mit
- * `node --test` geprüft. Hier bleibt nur das Umleiten.
+ * Hier stand vorher eine eigene Schranke mit einem gemeinsamen Passwort und
+ * einem Cookie `demo_zugang=1`. Dieses Cookie war nicht signiert und sein Wert
+ * zu erraten — wer ihn setzte, war drin, ohne das Passwort je zu kennen.
+ * Jetzt trägt dieselbe Kette wie bei aluclip und xylovans: eine mit
+ * AUTH_SECRET signierte Sitzung, die sich nicht nachbauen lässt.
+ *
+ * Wie in aluclip bewusst `getToken` statt des `auth`-Wrappers: der Wrapper zöge
+ * die Anmelde-Logik samt bcrypt in die Edge-Laufzeit.
  */
-export function proxy(request: NextRequest) {
-  const noetig = zugangNoetig({
-    pfad: request.nextUrl.pathname,
-    hatCookie: request.cookies.get(COOKIE_NAME)?.value === "1",
-    passwortGesetzt: Boolean(process.env.DEMO_PASSWORT),
-  });
-  if (!noetig) return NextResponse.next();
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-  const ziel = new URL("/zugang", request.url);
-  // Wohin es nach dem Anmelden weitergeht. Nur der Pfad, damit niemand die
-  // Demo als offene Weiterleitung auf eine fremde Domain missbrauchen kann.
-  ziel.searchParams.set("weiter", request.nextUrl.pathname);
-  return NextResponse.redirect(ziel);
+  // Die Anmeldung selbst und ihre API müssen ohne Sitzung erreichbar sein,
+  // sonst leitet die Schranke den Login auf den Login.
+  if (pathname.startsWith("/auth") || pathname.startsWith("/api/auth")) {
+    return NextResponse.next();
+  }
+
+  // secureCookie muss zu useSecureCookies der Auth-Config passen: in Produktion
+  // heißt das Cookie __Secure-authjs.session-token. Ohne das Flag sucht getToken
+  // den unpräfixierten Namen, findet nichts und schickt jede angemeldete Person
+  // zurück auf den Login — nur in Produktion, nicht in der Entwicklung.
+  const token = await getToken({
+    req: request,
+    secret: process.env.AUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === "production",
+  });
+
+  if (!token?.role) {
+    const ziel = new URL("/auth/login", request.url);
+    // Nur der Pfad, damit die Anmeldung keine offene Weiterleitung wird.
+    ziel.searchParams.set("weiter", pathname);
+    return NextResponse.redirect(ziel);
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  // Alles außer den Next-Interna und Dateien mit Endung. Die inhaltliche
-  // Ausnahmeliste steht in demo-zugang.ts, nicht hier — doppelte Wahrheit wäre
-  // genau die Stelle, an der eine Schranke still aufgeht.
-  matcher: ["/((?!_next/static|_next/image).*)"],
+  // Alles außer den Next-Interna und statischen Dateien.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|manifest.json|.*\\.(?:png|jpg|jpeg|svg|webp|ico)$).*)",
+  ],
 };

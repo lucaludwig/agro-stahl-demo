@@ -155,7 +155,7 @@ export function ChatWidget() {
   // /sprache aus einem anderen Grund: die Seite geht als eigenstaendige
   // Vorfuehrung an AGRO-STAHL. Ein Assistent, der zu Zahlen der erfundenen
   // Bauer GmbH antwortet, waere dort nur verwirrend.
-  if (pathname === "/zugang" || pathname === "/sprache") return null;
+  if (pathname.startsWith("/auth") || pathname === "/sprache") return null;
 
   return (
     <>
