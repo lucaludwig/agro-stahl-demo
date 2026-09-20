@@ -49,7 +49,11 @@ export function WerkflowShell({ children }: { children: React.ReactNode }) {
   // Betriebsnamen, Nutzer und Modul-Links würde dort Zugang vortäuschen und
   // hätte nur tote Ziele — das Root-Layout kann man nicht ersetzen, also hält
   // sich die Shell selbst heraus.
-  if (pathname === "/zugang") {
+  //
+  // /sprache aus demselben Grund: die Seite geht als eigenständige Vorführung
+  // an AGRO-STAHL. Eine Kopfleiste mit "Bauer GmbH" und Modulen eines
+  // Installateurs hätte dort nichts zu suchen.
+  if (pathname === "/zugang" || pathname === "/sprache") {
     return <div className="min-h-dvh">{children}</div>;
   }
 
