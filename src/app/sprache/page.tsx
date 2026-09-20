@@ -24,6 +24,9 @@ import {
 
 type Phase = "bereit" | "aufnahme" | "transkribiert" | "wertet_aus" | "fertig";
 
+/** Obergrenze der Aufnahme. Die Route gibt der Transkription 120 s. */
+const MAX_SEKUNDEN = 120;
+
 const ANLIEGEN_FELDER: { schluessel: keyof Anfrage["anliegen"]; label: string }[] = [
   { schluessel: "material", label: "Material" },
   { schluessel: "anfertigung", label: "Anfertigung" },
@@ -96,7 +99,16 @@ export default function SprachePage() {
     recorder.start();
     recorderRef.current = recorder;
     setPhase("aufnahme");
-    timerRef.current = setInterval(() => setSekunden((s) => s + 1), 1000);
+    timerRef.current = setInterval(() => {
+      setSekunden((s) => {
+        // Harte Obergrenze. Ohne sie läuft eine vergessene Aufnahme weiter, bis
+        // das Audio so lang ist, dass die Transkription in das Zeitlimit der
+        // Route läuft — in einer Vorführung sieht das aus, als sei der Dienst
+        // kaputt. Eine Ansage ans Büro dauert Sekunden, keine Minuten.
+        if (s + 1 >= MAX_SEKUNDEN) aufnahmeBeenden();
+        return s + 1;
+      });
+    }, 1000);
   }
 
   function aufnahmeBeenden() {
@@ -308,7 +320,11 @@ export default function SprachePage() {
                   wert={anfrage.name}
                   unsicher={anfrage.unsicher.includes("name")}
                 />
-                <Zeile label="Telefonnummer" wert={anfrage.telefonnummer} />
+                <Zeile
+                  label="Telefonnummer"
+                  wert={anfrage.telefonnummer}
+                  unsicher={anfrage.unsicher.includes("telefonnummer")}
+                />
                 <Zeile
                   label="Kunde"
                   wert={

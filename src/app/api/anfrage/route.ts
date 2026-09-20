@@ -53,10 +53,21 @@ const AnfrageSchema = z.object({
     .string()
     .nullable()
     .describe("nur wenn ein Mitarbeiter namentlich zugeteilt wurde"),
+  // Fest aufgezählt statt freie Strings: die Maske hängt die Markierung an
+  // genau diesen Bezeichnern auf. Schriebe das Modell "Name" oder "Kundenname",
+  // bliebe das Feld unmarkiert und die Warnung stünde nur in der Kopfzeile.
   unsicher: z
-    .array(z.string())
+    .array(
+      z.enum([
+        "name",
+        "telefonnummer",
+        "adresse",
+        "fertigstellung",
+        "mitarbeiter",
+      ]),
+    )
     .describe(
-      "Feldnamen, deren Wert im Transkript undeutlich war, etwa ein schwer verständlicher Eigenname. Leeres Array, wenn alles klar war",
+      "Felder, deren Wert im Transkript undeutlich war, etwa ein schwer verständlicher Eigenname. Leeres Array, wenn alles klar war",
     ),
 });
 
