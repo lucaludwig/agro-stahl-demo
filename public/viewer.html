@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>werkflow Demo — Viewer</title>
+  <style>
+    /* Gleiche Markenwelt wie die Uebersicht: Tiefblau wie werkflow.at, Amber als Aktion. */
+    :root {
+      --grund: #06274a;
+      --flaeche: #0b3159;
+      --kante: #16456f;
+      --text: #f4f9ff;
+      --text-leise: #a6c4e0;
+      --aktion: #d97706;
+      --aktion-hell: #f9a825;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: var(--grund);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      overflow: hidden;
+    }
+    /* Erklaert die aktive Rolle. Die Hoehe ist nicht fix eingerechnet: main ist flex,
+       fitPhoneFrame liest die tatsaechlich verfuegbare Hoehe. */
+    .rollenzeile {
+      flex-shrink: 0;
+      padding: 9px 16px;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--text-leise);
+      background: rgba(255,255,255,.03);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      text-align: center;
+    }
+    @media (max-width: 560px) { .rollenzeile { text-align: left; font-size: 12.5px; } }
+    /* Topbar: 56px + Safe-Area oben (iPad/iPhone Notch) */
+    .topbar {
+      height: calc(56px + env(safe-area-inset-top));
+      padding-top: env(safe-area-inset-top);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-left: 12px;
+      padding-right: 12px;
+      background: var(--grund);
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      flex-shrink: 0;
+    }
+    .back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      min-height: 44px;
+      border-radius: 10px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 22px;
+      line-height: 1;
+    }
+    .back:active, .back:hover { background: var(--flaeche); }
+    .modulname {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+      flex: 1;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .modulname span { color: var(--aktion-hell); }
+    .tabs { display: flex; gap: 8px; }
+    .tab {
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 10px;
+      border: 1px solid var(--kante);
+      background: var(--flaeche);
+      color: var(--text-leise);
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color .15s, color .15s, background .15s;
+    }
+    .tab.aktiv {
+      background: var(--aktion);
+      border-color: var(--aktion);
+      color: #1a1206;
+      font-weight: 700;
+    }
+    /* iframe-Bereich */
+    main {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      background: var(--grund);
+    }
+    /* Desktop-Rolle: vollflaechig */
+    main.desktop .frame-wrap {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    /* Phone-Rolle: fester 390x740-Wrapper = echter Mobile-Viewport im iframe.
+       iOS-Safari-Quirk: NICHT auf iframe-eigene Hoehe verlassen — der Wrapper
+       mit fester Groesse ist die Autoritaet, das iframe fuellt ihn absolut. */
+    main.phone .frame-wrap {
+      width: 390px;
+      height: 740px;
+      flex-shrink: 0;
+      position: relative;
+      margin-top: 10px;
+      border: 10px solid #12243a;
+      border-radius: 44px;
+      box-shadow: 0 26px 70px -18px rgba(0,0,0,.75), 0 0 0 1px var(--kante);
+      background: #f9fafb;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      transform-origin: top center;
+    }
+    iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    main.phone iframe { border-radius: 34px; }
+    /* Lade-Overlay */
+    .lade {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(6, 39, 74, .78);
+      z-index: 10;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity .2s;
+    }
+    .lade.aus { opacity: 0; }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid var(--kante);
+      border-top-color: var(--aktion-hell);
+      border-radius: 50%;
+      animation: dreh .8s linear infinite;
+    }
+    @keyframes dreh { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="back" href="/" aria-label="Zur&uuml;ck zur &Uuml;bersicht">&#8592;</a>
+    <div class="modulname" id="modulname">werk<span>flow</span></div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+  <div class="rollenzeile" id="hinweis"></div>
+  <main id="main" class="desktop">
+    <div class="frame-wrap" id="frameWrap">
+      <iframe id="frame" title="werkflow Demo-App" allow="camera; microphone"></iframe>
+      <div class="lade" id="lade"><div class="spinner"></div></div>
+    </div>
+  </main>
+  <script>
+    'use strict';
+
+    // Single Source: Apps, Hosts, Rollen. device 'phone' = 390x740-Frame, 'desktop' = vollflaechig.
+    // Jede Rolle traegt einen Satz, der sagt, was dieser Mensch mit der Ansicht tut.
+    // Ohne den stand im Termin nur "Techniker | Zentrale" da, und bei zwei aehnlichen
+    // Rollen blieb offen, wozu es die zweite gibt.
+    const APPS = {
+      lugar:     { name: 'Lieferscheine',  host: 'https://demo-lugar.werkflow.at',
+                   rollen: [ { key: 'techniker', label: 'Techniker', device: 'phone',
+                               hinweis: 'Auf der Baustelle: Material diktieren, Fotos, Kundenunterschrift.' },
+                             // Buero-Rolle zeigt den Filialleiter, nicht die Zentrale: seit
+                             // 11.08.2026 hat die Zentrale auf Wunsch von Frau Lechner keinen
+                             // Kalender-Eintrag und kein Abgleich-Widget mehr. Genau die beiden
+                             // sind in der Demo das Argument fuer die Kalender-Anbindung.
+                             { key: 'filialleiter',  label: 'B\u00fcro',  device: 'desktop',
+                               hinweis: 'Im B\u00fcro: Termine im Kalender, Scheine pr\u00fcfen und freigeben, verrechnen.' } ] },
+      // Buchhaltung bewusst mit einer Ansicht: die Pruefer-Rolle unterscheidet sich nur
+      // um die Benutzerverwaltung. Zwei fast gleiche Tabs erzeugen im Termin die Frage
+      // "was ist der Unterschied?", und die Antwort ist ein Satz, keine Vorfuehrung.
+      xylovans:  { name: 'Buchhaltung',    host: 'https://demo-xylovans.werkflow.at',
+                   rollen: [ { key: 'buchhaltung', label: 'Buchhaltung', device: 'desktop',
+                               hinweis: 'Belege pr\u00fcfen, kategorisieren, an den Steuerberater exportieren.' } ] },
+      chamelion: { name: 'Projektbuchung', host: 'https://demo-chamelion.werkflow.at',
+                   rollen: [ { key: 'monteur',        label: 'Monteur',        device: 'phone',
+                               hinweis: 'Am Handy: Stunden buchen, Tagesbericht schreiben, Regieleistung unterschreiben lassen.' },
+                             { key: 'projektleitung', label: 'Projektleitung', device: 'desktop',
+                               hinweis: 'Im B\u00fcro: Budget pro Projekt, Stunden aller Mitarbeiter, Regieberichte freigeben.' } ] },
+    };
+
+    // URL-Param-Validierung: Whitelist via Object.hasOwn (gleiche Konvention wie demo-login).
+    // Kein innerHTML mit Param-Daten — DOM wird ausschliesslich per createElement/textContent gebaut.
+    const params = new URLSearchParams(location.search);
+    const appKey = params.get('app');
+    if (appKey === null || !Object.hasOwn(APPS, appKey)) {
+      location.replace('/');
+      throw new Error('unbekannte app');
+    }
+    const app = APPS[appKey];
+
+    const elModulname = document.getElementById('modulname');
+    const elTabs = document.getElementById('tabs');
+    const elMain = document.getElementById('main');
+    const elWrap = document.getElementById('frameWrap');
+    const elFrame = document.getElementById('frame');
+    const elLade = document.getElementById('lade');
+
+    document.title = 'werkflow Demo \u2014 ' + app.name;
+    elModulname.textContent = app.name;
+
+    let aktiveRolle = app.rollen[0];
+
+    // Fit-Logik: iPad Landscape hat nur ~700-750px nutzbare Hoehe — der 760px hohe
+    // Phone-Wrapper (740 + 2x10 Border) wird per transform:scale eingepasst.
+    // Portrait (~810x1080) rendert mit scale 1.
+    function fitPhoneFrame() {
+      if (aktiveRolle.device !== 'phone') {
+        elWrap.style.transform = '';
+        return;
+      }
+      const verfuegbar = elMain.clientHeight - 20; // 10px margin-top + Luft unten
+      const scale = Math.min(1, verfuegbar / 760);
+      elWrap.style.transform = scale < 1 ? 'scale(' + scale + ')' : '';
+    }
+
+    const elHinweis = document.getElementById('hinweis');
+
+    function ladeRolle(rolle) {
+      aktiveRolle = rolle;
+      elMain.className = rolle.device === 'phone' ? 'phone' : 'desktop';
+      elLade.classList.remove('aus');
+      // Kompletter Reload gewollt: der Endpoint setzt die Session der Rolle.
+      elFrame.src = app.host + '/api/demo-login?rolle=' + encodeURIComponent(rolle.key);
+      for (const btn of elTabs.children) {
+        btn.classList.toggle('aktiv', btn.dataset.rolle === rolle.key);
+      }
+      // textContent, nicht innerHTML: die Texte sind Konstanten, die Regel bleibt trotzdem.
+      elHinweis.textContent = rolle.label + ' — ' + rolle.hinweis;
+      fitPhoneFrame();
+    }
+
+    // Bei nur einer Rolle waere ein Umschalter mit einem Knopf sinnlos.
+    if (app.rollen.length > 1) {
+      for (const rolle of app.rollen) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tab';
+        btn.textContent = rolle.label;
+        btn.dataset.rolle = rolle.key;
+        btn.title = rolle.hinweis;
+        btn.addEventListener('click', () => ladeRolle(rolle));
+        elTabs.appendChild(btn);
+      }
+    }
+
+    elFrame.addEventListener('load', () => elLade.classList.add('aus'));
+    window.addEventListener('resize', fitPhoneFrame);
+    window.addEventListener('orientationchange', () => setTimeout(fitPhoneFrame, 150));
+
+    ladeRolle(app.rollen[0]);
+  </script>
+</body>
+</html>

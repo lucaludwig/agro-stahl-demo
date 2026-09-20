@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>werkflow Demo — Musterbau GmbH</title>
+  <style>
+    /* Markenwelt wie werkflow.at: Tiefblau brand-950 als Grund, Amber d97706 als Aktion.
+       Vorher stand hier ein kaltes Grau (#111827) mit drei gleich grossen Emoji-Karten
+       mittig in einer leeren Flaeche — das las sich als Platzhalter, nicht als Produkt. */
+    :root {
+      --grund: #06274a;
+      --grund-tief: #041b34;
+      --flaeche: #0b3159;
+      --kante: #16456f;
+      --kante-hell: #1d5486;
+      --text: #f4f9ff;
+      --text-leise: #a6c4e0;   /* aus dem Blau getoent, nicht grau: 7.1:1 auf --grund */
+      --aktion: #d97706;
+      --aktion-hell: #f9a825;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: var(--grund);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+    }
+    /* Gerichtetes Licht von oben links statt flaechiger Farbe */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(120% 90% at 8% -10%, rgba(45,120,190,.38), transparent 60%),
+        radial-gradient(80% 70% at 95% 105%, rgba(217,119,6,.10), transparent 65%),
+        linear-gradient(180deg, transparent 40%, var(--grund-tief) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    header, main, footer { position: relative; z-index: 1; }
+
+    header {
+      padding: 22px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .marke {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+    .marke b { font-weight: 700; }
+    .marke b i { font-style: normal; color: var(--aktion-hell); }
+    .marke em {
+      font-style: normal;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--text-leise);
+      border: 1px solid var(--kante-hell);
+      border-radius: 5px;
+      padding: 3px 7px;
+    }
+    .betrieb { color: var(--text-leise); font-size: 14px; text-align: right; }
+    .betrieb b { color: var(--text); font-weight: 600; }
+
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: clamp(22px, 4vh, 56px) 28px 28px;
+    }
+    h1 {
+      font-size: clamp(27px, 3.6vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      font-weight: 700;
+      max-width: 20ch;
+      text-wrap: balance;
+    }
+    .anriss {
+      margin-top: 14px;
+      margin-bottom: clamp(20px, 3.2vh, 38px);
+      color: var(--text-leise);
+      font-size: 16px;
+      line-height: 1.55;
+      max-width: 66ch;
+    }
+    .anriss b { color: var(--text); font-weight: 600; }
+
+    .module { display: flex; flex-direction: column; gap: 12px; }
+
+    a.modul {
+      display: grid;
+      grid-template-columns: 50px 1fr auto;
+      align-items: center;
+      gap: 20px;
+      padding: 17px 22px;
+      background: linear-gradient(180deg, var(--flaeche), rgba(11,49,89,.72));
+      border: 1px solid var(--kante);
+      border-radius: 18px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 14px 30px -22px rgba(0,0,0,.85);
+      transition: border-color .25s cubic-bezier(.16,1,.3,1),
+                  transform .25s cubic-bezier(.16,1,.3,1),
+                  box-shadow .25s cubic-bezier(.16,1,.3,1);
+      /* Ein einziger inszenierter Moment: die Zeilen kommen gestaffelt herein */
+      animation: einlauf .7s cubic-bezier(.16,1,.3,1) backwards;
+    }
+    a.modul:nth-child(1) { animation-delay: .04s; }
+    a.modul:nth-child(2) { animation-delay: .12s; }
+    a.modul:nth-child(3) { animation-delay: .20s; }
+    @keyframes einlauf {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      a.modul { animation: none; }
+    }
+    a.modul:hover, a.modul:focus-visible {
+      border-color: var(--aktion);
+      transform: translateY(-3px);
+      box-shadow: 0 22px 42px -24px rgba(0,0,0,.9), 0 0 0 1px rgba(217,119,6,.35);
+      outline: none;
+    }
+    a.modul:focus-visible { box-shadow: 0 0 0 3px rgba(249,168,37,.55); }
+
+    .zeichen {
+      width: 50px; height: 50px;
+      display: grid; place-items: center;
+      border-radius: 14px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--kante-hell);
+      color: var(--aktion-hell);
+    }
+    .zeichen svg { width: 26px; height: 26px; }
+
+    .modul h2 {
+      font-size: 19px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin-bottom: 5px;
+    }
+    .modul p {
+      color: var(--text-leise);
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 60ch;
+    }
+    .rollen {
+      display: flex; flex-wrap: wrap; gap: 7px;
+      margin-top: 9px;
+    }
+    /* Die Rollen stehen schon hier: im Termin war sonst unklar, wer welche Ansicht
+       benutzt — und bei zwei aehnlichen Rollen, wozu es die zweite gibt. */
+    .rollen span {
+      font-size: 12px;
+      color: var(--text-leise);
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--kante);
+      border-radius: 999px;
+      padding: 4px 10px;
+      white-space: nowrap;
+    }
+    .oeffnen {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 600;
+      color: var(--aktion-hell);
+      white-space: nowrap;
+    }
+    .oeffnen svg { width: 18px; height: 18px; transition: transform .25s cubic-bezier(.16,1,.3,1); }
+    a.modul:hover .oeffnen svg { transform: translateX(4px); }
+
+    footer {
+      padding: 18px 28px 22px;
+      color: var(--text-leise);
+      font-size: 12.5px;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+    footer a { color: var(--text-leise); text-decoration: underline; text-underline-offset: 2px; }
+    footer a:hover { color: var(--text); }
+
+    @media (max-width: 720px) {
+      header { padding: 18px 20px; }
+      .betrieb { font-size: 13px; }
+      main { padding: 32px 20px 32px; }
+      a.modul {
+        grid-template-columns: 44px 1fr;
+        gap: 16px;
+        padding: 18px 18px;
+        row-gap: 14px;
+      }
+      .zeichen { width: 44px; height: 44px; border-radius: 12px; }
+      .zeichen svg { width: 22px; height: 22px; }
+      .oeffnen { grid-column: 2; }
+      .modul p { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="marke"><b>werk<i>flow</i></b> <em>Demo</em></div>
+    <!-- ponytail: Betriebsname zentral hier + im title, gleicher fiktiver Betrieb wie in den Modulen -->
+    <div class="betrieb"><b>Musterbau GmbH</b><br>Malerei &amp; Ausbau, Wien</div>
+  </header>
+
+  <main>
+    <h1>Ein Betrieb, drei Module, echte Software.</h1>
+    <p class="anriss">
+      Keine Klickattrappe: Das sind die Systeme, die bei unseren Kunden im Tagesgesch&auml;ft laufen,
+      bef&uuml;llt mit den Daten eines erfundenen Betriebs. <b>Alles darf angefasst werden</b> &mdash; jede Nacht wird zur&uuml;ckgesetzt.
+    </p>
+
+    <div class="module">
+      <a class="modul" href="/viewer.html?app=lugar">
+        <div class="zeichen" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+            <path d="M14 3v5h5"/>
+            <path d="m8.5 14.5 2 2 4.5-4.5"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Lieferscheine</h2>
+          <p>Material auf der Baustelle diktiert, Kundenunterschrift am Handy, Freigabe und Verrechnung im B&uuml;ro &mdash; Termine kommen aus dem Kalender des Betriebs.</p>
+          <div class="rollen">
+            <span>Techniker &middot; Handy</span>
+            <span>B&uuml;ro &middot; Desktop</span>
+          </div>
+        </div>
+        <div class="oeffnen">&Ouml;ffnen
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg>
+        </div>
+      </a>
+
+      <a class="modul" href="/viewer.html?app=xylovans">
+        <div class="zeichen" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5.5 3.5h13v15.2l-2.2-1.5-2.2 1.5-2.2-1.5-2.1 1.5-2.1-1.5-1.2 1.5z"/>
+            <path d="M8.5 8h7"/>
+            <path d="M8.5 11.5h4.5"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Buchhaltung</h2>
+          <p>Belege kommen per Mail oder Foto herein, werden gelesen und kategorisiert &mdash; gepr&uuml;ft wird im Stapel, exportiert fertig an den Steuerberater.</p>
+          <div class="rollen">
+            <span>Buchhaltung &middot; Desktop</span>
+          </div>
+        </div>
+        <div class="oeffnen">&Ouml;ffnen
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg>
+        </div>
+      </a>
+
+      <a class="modul" href="/viewer.html?app=chamelion">
+        <div class="zeichen" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="13.5" r="7"/>
+            <path d="M12 10.5v3.5l2.2 1.5"/>
+            <path d="M9.5 3h5"/>
+            <path d="M12 3v3.5"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Projektbuchung</h2>
+          <p>Stunden und Tagesberichte von der Baustelle, Regieleistungen vom Kunden unterschrieben &mdash; das B&uuml;ro sieht pro Projekt, was das Budget noch tr&auml;gt.</p>
+          <div class="rollen">
+            <span>Monteur &middot; Handy</span>
+            <span>Projektleitung &middot; Desktop</span>
+          </div>
+        </div>
+        <div class="oeffnen">&Ouml;ffnen
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg>
+        </div>
+      </a>
+    </div>
+  </main>
+
+  <footer>
+    werkflow Automatisierungs GmbH &middot; Demo-Umgebung mit erfundenen Daten, n&auml;chtlicher Reset um 04:00
+    &middot; <a href="/klassik">Klassische Ansicht</a>
+  </footer>
+</body>
+</html>
