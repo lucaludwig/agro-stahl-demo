@@ -9,10 +9,12 @@ import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+// Ein gemeinsamer Demo-Code kann keine Rollen unterscheiden; er öffnet das GF-Konto.
+const DEMO_KONTO = "chef@agro-stahl.at";
+
 function Formular() {
   const router = useRouter();
   const suche = useSearchParams();
-  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [fehler, setFehler] = useState<string | null>(null);
   const [laeuft, setLaeuft] = useState(false);
@@ -30,15 +32,13 @@ function Formular() {
     setLaeuft(true);
 
     const ergebnis = await signIn("credentials", {
-      email,
+      email: DEMO_KONTO,
       password: code,
       redirect: false,
     });
 
     if (ergebnis?.error) {
-      // Bewusst ohne Unterscheidung zwischen unbekannter Adresse und falschem
-      // Code — die Unterscheidung verrät, welche Adressen es gibt.
-      setFehler("E-Mail oder Code stimmt nicht.");
+      setFehler("Der Code stimmt nicht.");
       setLaeuft(false);
       return;
     }
@@ -49,24 +49,6 @@ function Formular() {
 
   return (
     <form onSubmit={absenden} className="space-y-4">
-      <div>
-        <label
-          htmlFor="email"
-          className="mb-1.5 block text-sm font-medium text-[#18324d]"
-        >
-          E-Mail
-        </label>
-        <input
-          id="email"
-          type="email"
-          autoComplete="username"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-lg border border-[#cbd5df] px-3.5 py-2.5 text-[15px] text-[#18324d] outline-none focus:border-[#0d2d50] focus:ring-2 focus:ring-[#0d2d50]/15"
-        />
-      </div>
-
       <div>
         <label
           htmlFor="code"
@@ -120,7 +102,7 @@ export default function LoginSeite() {
             Spracherfassung
           </h1>
           <p className="mt-2 text-sm text-[#526375]">
-            Melden Sie sich mit Ihren Zugangsdaten an.
+            Geben Sie Ihren vierstelligen Zugangscode ein.
           </p>
         </div>
 
