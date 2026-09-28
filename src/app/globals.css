@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+.agro-ui {
+  --agro-navy: #233245;
+  --agro-yellow: #fac310;
+  --agro-canvas: #f6f6f3;
+  --agro-line: #dce1e2;
+  --agro-muted: #536275;
+}
+
+.agro-ui ::selection {
+  background: var(--agro-yellow);
+  color: var(--agro-navy);
+}
+
 :root {
   --navy: #0d2d50;
   --blue: #0078d4;

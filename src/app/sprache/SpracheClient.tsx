@@ -14,6 +14,7 @@
 
 import { useRef, useState } from "react";
 import { signOut } from "next-auth/react";
+import Image from "next/image";
 import { audioDateiname } from "@/lib/audio";
 import {
   anliegenLeer,
@@ -190,59 +191,65 @@ export default function SpracheClient({
     : [];
 
   return (
-    <div className="min-h-dvh bg-[#f6f8fa]">
-      <header className="border-b border-[#dce3e9] bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-8">
-          <div>
-            <p className="text-[15px] font-bold tracking-[0.06em] text-[#0d2d50]">
-              AGRO-STAHL
-            </p>
-            <p className="text-xs text-[#526375]">Agrartechnik & Stahlbau GmbH</p>
-          </div>
+    <div className="agro-ui min-h-dvh bg-[var(--agro-canvas)]">
+      <header className="bg-[var(--agro-navy)] text-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-8">
+          <Image
+            src="/agro-stahl-logo.png"
+            alt="AGRO-STAHL"
+            width={196}
+            height={50}
+            priority
+            unoptimized
+            className="h-auto w-40 sm:w-49"
+          />
           <div className="flex items-center gap-4 sm:gap-6">
-            <div className="min-w-0 text-right leading-tight">
-              <p className="truncate text-sm font-medium text-[#18324d]">{name}</p>
-              <p className="mt-0.5 text-xs text-[#526375]">
+            <div className="hidden min-w-0 text-right leading-tight sm:block">
+              <p className="truncate text-sm font-medium text-white">{name}</p>
+              <p className="mt-0.5 text-xs text-[#c4cdd5]">
                 {ROLLEN_TITEL[rolle] ?? rolle}
               </p>
             </div>
             <button
               onClick={() => signOut({ callbackUrl: "/auth/login" })}
-              className="rounded-md border border-[#cbd5df] px-3 py-2 text-sm font-medium text-[#18324d] transition-colors hover:bg-[#f3f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d2d50]"
+              className="rounded-md border border-white/35 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--agro-yellow)]"
             >
               Abmelden
             </button>
           </div>
         </div>
+        <div className="border-t border-white/15 px-4 py-2 text-xs text-[#c4cdd5] sm:hidden">
+          {name} · {ROLLEN_TITEL[rolle] ?? rolle}
+        </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 pb-12 pt-8 sm:px-8 sm:pt-10">
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold tracking-[-0.02em] text-[#0d2d50] sm:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-[-0.02em] text-[var(--agro-navy)] sm:text-3xl">
             Kundenanfrage erfassen
           </h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[#526375]">
-            Sprechen Sie Ihre Notiz ein. Die Angaben werden anschließend als
-            Anfrageformular aufbereitet.
+          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[var(--agro-muted)]">
+            Sprechen Sie die Kundenanfrage ein. Die Angaben werden anschließend
+            in das Formular übertragen.
           </p>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-2">
           {/* Links: Aufnahme */}
-          <section className="rounded-xl border border-[#dce3e9] bg-white p-5 sm:p-6">
-            <h2 className="text-lg font-semibold text-[#0d2d50]">Aufnahme</h2>
-            <p className="mt-1 text-sm text-[#526375]">
-              Kunde, Anliegen, Termin und gegebenenfalls Preis nennen.
+          <section className="rounded-xl border border-[var(--agro-line)] bg-white p-5 sm:p-6">
+            <h2 className="text-lg font-semibold text-[var(--agro-navy)]">Aufnahme</h2>
+            <p className="mt-1 text-sm text-[var(--agro-muted)]">
+              Nennen Sie Kunde, Anliegen, Termin und gegebenenfalls Preis.
             </p>
 
-            <div className="my-6 flex min-h-36 flex-col items-start justify-center gap-4 border-y border-[#e7ebef] py-6 sm:flex-row sm:items-center sm:justify-start">
+            <div className="my-6 flex min-h-36 flex-col items-start justify-center gap-4 border-y border-[var(--agro-line)] py-6 sm:flex-row sm:items-center sm:justify-start">
               <button
                 onClick={phase === "aufnahme" ? aufnahmeBeenden : aufnahmeStarten}
                 disabled={laeuft || !darfAufnehmen}
-                className={`inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d2d50] disabled:cursor-not-allowed disabled:opacity-50 ${
+                className={`inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--agro-navy)] disabled:cursor-not-allowed disabled:opacity-50 ${
                   phase === "aufnahme"
-                    ? "bg-[#a83333] hover:bg-[#8d2929]"
-                    : "bg-[#0d2d50] hover:bg-[#174470]"
+                    ? "bg-[#a83333] text-white hover:bg-[#8d2929]"
+                    : "bg-[var(--agro-yellow)] text-[var(--agro-navy)] hover:bg-[#eab400]"
                 }`}
               >
                 {phase === "aufnahme" ? (
@@ -267,24 +274,24 @@ export default function SpracheClient({
                   </div>
                 )}
                 {phase === "transkribiert" && (
-                  <span className="text-[#526375]">
+                  <span className="text-[var(--agro-muted)]">
                     Spracherkennung läuft …
                   </span>
                 )}
                 {phase === "wertet_aus" && (
-                  <span className="text-[#526375]">
+                  <span className="text-[var(--agro-muted)]">
                     Formular wird gefüllt …
                   </span>
                 )}
                 {phase === "bereit" && (
-                  <span className="text-[#526375]">
+                  <span className="text-[var(--agro-muted)]">
                     {darfAufnehmen
                       ? "Bereit für Ihre Sprachnachricht."
                       : "Für neue Anfragen fehlt die Berechtigung."}
                   </span>
                 )}
                 {phase === "fertig" && (
-                  <span className="text-[#526375]">
+                  <span className="text-[var(--agro-muted)]">
                     Formular bereit. Für die nächste Anfrage erneut aufnehmen.
                   </span>
                 )}
@@ -299,43 +306,47 @@ export default function SpracheClient({
 
             {transkript && (
               <div className="mt-6">
-                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#526375]">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--agro-muted)]">
                   Erkanntes Transkript
                 </h3>
-                <p className="text-[15px] leading-relaxed text-[#18324d]">
+                <p className="text-[15px] leading-relaxed text-[var(--agro-navy)]">
                   {transkript}
                 </p>
               </div>
             )}
 
-            <p className="mt-6 text-xs leading-relaxed text-[#526375]">
-              Die Audioaufnahme wird auf dem werkflow-Server verarbeitet, nicht
-              an Drittanbieter weitergegeben und nicht gespeichert.
-            </p>
           </section>
 
           {/* Rechts: Formular */}
-          <section className="rounded-xl border border-[#dce3e9] bg-white p-5 sm:p-6">
-            <h2 className="text-lg font-semibold text-[#0d2d50]">Anfrageformular</h2>
-            <p className="mt-1 text-sm text-[#526375]">
+          <section className="rounded-xl border border-[var(--agro-line)] bg-white p-5 sm:p-6">
+            <h2 className="text-lg font-semibold text-[var(--agro-navy)]">Anfrageformular</h2>
+            <p className="mt-1 text-sm text-[var(--agro-muted)]">
               {anfrage
                 ? "Automatisch ausgefüllt; nicht genannte Angaben bleiben leer."
                 : "Wird nach der Aufnahme automatisch ausgefüllt."}
             </p>
 
             {!anfrage && (
-              <div className="mt-6 border-t border-[#e7ebef] pt-8">
-                <p className="text-sm font-medium text-[#18324d]">Noch keine Anfrage erfasst</p>
-                <p className="mt-1 max-w-sm text-sm leading-relaxed text-[#526375]">
-                  Starten Sie eine Aufnahme. Die erkannten Angaben erscheinen anschließend hier.
-                </p>
+              <div className="mt-6 border-t border-[var(--agro-line)] pt-4">
+                {[
+                  "Datum der Anfrage",
+                  "Name",
+                  "Kunde",
+                  "Anliegen",
+                  "Fertig bis",
+                ].map((label) => (
+                  <div key={label} className="flex justify-between gap-4 border-b border-[var(--agro-line)] py-3 last:border-b-0">
+                    <span className="text-sm text-[var(--agro-muted)]">{label}</span>
+                    <span aria-hidden="true" className="text-[var(--agro-line)]">—</span>
+                  </div>
+                ))}
               </div>
             )}
 
             {anfrage && (
               <>
-                <div className="mb-4 flex flex-wrap items-center gap-2">
-                  <span className="rounded-md bg-[#0d2d50] px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white">
+                <div className="mb-4 mt-5 flex flex-wrap items-center gap-2">
+                  <span className="rounded-md bg-[var(--agro-navy)] px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white">
                     {anfrage.vorgangsart === "angebot" ? "Angebot" : "Auftrag"}
                   </span>
                   {fehlt.length > 0 && (
@@ -375,7 +386,7 @@ export default function SpracheClient({
                   <Zeile label="Adresse" wert={anfrage.adresse} />
                 )}
 
-                <h3 className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-[#526375]">
+                <h3 className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-[var(--agro-muted)]">
                   Anliegen
                 </h3>
                 {anliegenLeer(anfrage.anliegen) ? (
@@ -392,7 +403,7 @@ export default function SpracheClient({
                   ))
                 )}
 
-                <h3 className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-[#526375]">
+                <h3 className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-[var(--agro-muted)]">
                   Termin und Zuständigkeit
                 </h3>
                 <Zeile
@@ -426,13 +437,13 @@ function Zeile({
   unsicher?: boolean;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-[#e7ebef] py-3 last:border-b-0">
-      <span className="shrink-0 text-sm text-[#526375]">{label}</span>
+    <div className="flex items-baseline justify-between gap-4 border-b border-[var(--agro-line)] py-3 last:border-b-0">
+      <span className="shrink-0 text-sm text-[var(--agro-muted)]">{label}</span>
       {wert ? (
-        <span className="text-right text-[15px] font-medium text-[#18324d]">
+        <span className="min-w-0 break-words text-right text-[15px] font-medium text-[var(--agro-navy)]">
           {wert}
           {automatisch && (
-            <span className="ml-1.5 text-xs font-normal text-[#526375]">
+            <span className="ml-1.5 text-xs font-normal text-[var(--agro-muted)]">
               automatisch
             </span>
           )}
@@ -443,7 +454,7 @@ function Zeile({
           )}
         </span>
       ) : (
-        <span className="text-right text-sm text-[#627285]">
+        <span className="text-right text-sm text-[var(--agro-muted)]">
           nicht genannt
         </span>
       )}
