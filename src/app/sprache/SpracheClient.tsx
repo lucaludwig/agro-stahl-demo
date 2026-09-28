@@ -29,6 +29,12 @@ type Phase = "bereit" | "aufnahme" | "transkribiert" | "wertet_aus" | "fertig";
 /** Obergrenze der Aufnahme. Die Route gibt der Transkription 120 s. */
 const MAX_SEKUNDEN = 120;
 
+const ROLLEN_TITEL: Record<string, string> = {
+  GF: "Geschäftsführung",
+  BUERO: "Büro",
+  WERKSTATT: "Werkstatt",
+};
+
 const ANLIEGEN_FELDER: { schluessel: keyof Anfrage["anliegen"]; label: string }[] = [
   { schluessel: "material", label: "Material" },
   { schluessel: "anfertigung", label: "Anfertigung" },
@@ -184,143 +190,145 @@ export default function SpracheClient({
     : [];
 
   return (
-    <div className="min-h-dvh bg-[#f4f7fa] px-4 py-8 sm:px-8 sm:py-12">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-8">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <span className="inline-block rounded-full bg-[#e8f2fc] px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-[#0078d4]">
-              Vorführung Spracherfassung
-            </span>
-            <div className="flex items-center gap-3 text-sm">
-              <span className="text-[#5b6b7c]">
-                {name}
-                <span className="ml-1.5 text-xs uppercase tracking-wide text-[#8a97a6]">
-                  {rolle}
-                </span>
-              </span>
-              <button
-                onClick={() => signOut({ callbackUrl: "/auth/login" })}
-                className="rounded-lg border border-[#d7e0ea] bg-white px-3 py-1.5 text-sm text-[#5b6b7c] transition-colors hover:border-[#b6c2cf] hover:text-[#0d2d50]"
-              >
-                Abmelden
-              </button>
-            </div>
+    <div className="min-h-dvh bg-[#f6f8fa]">
+      <header className="border-b border-[#dce3e9] bg-white">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-8">
+          <div>
+            <p className="text-[15px] font-bold tracking-[0.06em] text-[#0d2d50]">
+              AGRO-STAHL
+            </p>
+            <p className="text-xs text-[#526375]">Agrartechnik & Stahlbau GmbH</p>
           </div>
-          <h1 className="mt-3 text-2xl font-bold text-[#0d2d50] sm:text-3xl">
-            AGRO-STAHL — Anfrage per Sprachnachricht
-          </h1>
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[#5b6b7c]">
-            Sprechen Sie eine Anfrage so ein, wie Sie sie dem Büro sagen würden.
-            Das System schreibt mit und füllt damit Ihr Anfrageformular — die
-            Felder sind die aus Ihrer Mail vom 18. September.
-          </p>
-        </header>
+          <div className="flex items-center gap-4 sm:gap-6">
+            <div className="min-w-0 text-right leading-tight">
+              <p className="truncate text-sm font-medium text-[#18324d]">{name}</p>
+              <p className="mt-0.5 text-xs text-[#526375]">
+                {ROLLEN_TITEL[rolle] ?? rolle}
+              </p>
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: "/auth/login" })}
+              className="rounded-md border border-[#cbd5df] px-3 py-2 text-sm font-medium text-[#18324d] transition-colors hover:bg-[#f3f6f8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d2d50]"
+            >
+              Abmelden
+            </button>
+          </div>
+        </div>
+      </header>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+      <main className="mx-auto max-w-6xl px-4 pb-12 pt-8 sm:px-8 sm:pt-10">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold tracking-[-0.02em] text-[#0d2d50] sm:text-3xl">
+            Kundenanfrage erfassen
+          </h1>
+          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[#526375]">
+            Sprechen Sie Ihre Notiz ein. Die Angaben werden anschließend als
+            Anfrageformular aufbereitet.
+          </p>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-2">
           {/* Links: Aufnahme */}
-          <section className="rounded-2xl border border-[#d7e0ea] bg-white p-6 shadow-[0_8px_24px_rgba(13,45,80,0.06)]">
-            <h2 className="mb-1 text-lg font-bold text-[#0d2d50]">
-              1 · Aufnehmen
-            </h2>
-            <p className="mb-5 text-sm text-[#8a97a6]">
-              Zum Beispiel: Kunde, was zu tun ist, vereinbarter Preis, bis wann.
+          <section className="rounded-xl border border-[#dce3e9] bg-white p-5 sm:p-6">
+            <h2 className="text-lg font-semibold text-[#0d2d50]">Aufnahme</h2>
+            <p className="mt-1 text-sm text-[#526375]">
+              Kunde, Anliegen, Termin und gegebenenfalls Preis nennen.
             </p>
 
-            <div className="flex flex-col items-center rounded-xl bg-[#eef2f6] px-4 py-8">
+            <div className="my-6 flex min-h-36 flex-col items-start justify-center gap-4 border-y border-[#e7ebef] py-6 sm:flex-row sm:items-center sm:justify-start">
               <button
                 onClick={phase === "aufnahme" ? aufnahmeBeenden : aufnahmeStarten}
                 disabled={laeuft || !darfAufnehmen}
-                className={`flex h-24 w-24 items-center justify-center rounded-full text-4xl text-white transition-transform disabled:cursor-not-allowed disabled:opacity-50 ${
+                className={`inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d2d50] disabled:cursor-not-allowed disabled:opacity-50 ${
                   phase === "aufnahme"
-                    ? "bg-[#c23b3b] hover:scale-105 active:scale-95"
-                    : "bg-[#0078d4] hover:scale-105 active:scale-95"
+                    ? "bg-[#a83333] hover:bg-[#8d2929]"
+                    : "bg-[#0d2d50] hover:bg-[#174470]"
                 }`}
-                aria-label={
-                  phase === "aufnahme" ? "Aufnahme beenden" : "Aufnahme starten"
-                }
               >
-                {phase === "aufnahme" ? "◼" : "🎙"}
+                {phase === "aufnahme" ? (
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+                    <rect x="5" y="5" width="14" height="14" rx="1" />
+                  </svg>
+                ) : (
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="h-4 w-4">
+                    <rect x="9" y="3" width="6" height="12" rx="3" />
+                    <path d="M5 11a7 7 0 0 0 14 0M12 18v3m-4 0h8" />
+                  </svg>
+                )}
+                {phase === "aufnahme" ? "Aufnahme beenden" : "Aufnahme starten"}
               </button>
 
-              <div className="mt-4 h-6 text-center">
+              <div role="status" aria-live="polite" className="min-h-6 text-sm">
                 {phase === "aufnahme" && (
-                  <div className="flex items-center gap-2 text-sm font-semibold text-[#c23b3b]">
-                    <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-[#c23b3b]" />
+                  <div className="flex items-center gap-2 font-medium text-[#9b2c2c]">
+                    <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-[#a83333]" />
                     Nimmt auf · {String(Math.floor(sekunden / 60)).padStart(2, "0")}
                     :{String(sekunden % 60).padStart(2, "0")}
                   </div>
                 )}
                 {phase === "transkribiert" && (
-                  <span className="text-sm text-[#5b6b7c]">
+                  <span className="text-[#526375]">
                     Spracherkennung läuft …
                   </span>
                 )}
                 {phase === "wertet_aus" && (
-                  <span className="text-sm text-[#5b6b7c]">
+                  <span className="text-[#526375]">
                     Formular wird gefüllt …
                   </span>
                 )}
                 {phase === "bereit" && (
-                  <span className="text-sm text-[#8a97a6]">
+                  <span className="text-[#526375]">
                     {darfAufnehmen
-                      ? "Tippen Sie auf das Mikrofon"
-                      : "Diese Rolle sieht Anfragen, legt aber keine an"}
+                      ? "Bereit für Ihre Sprachnachricht."
+                      : "Für neue Anfragen fehlt die Berechtigung."}
                   </span>
                 )}
                 {phase === "fertig" && (
-                  <span className="text-sm text-[#8a97a6]">
-                    Fertig — noch einmal für die nächste Anfrage
+                  <span className="text-[#526375]">
+                    Formular bereit. Für die nächste Anfrage erneut aufnehmen.
                   </span>
                 )}
               </div>
             </div>
 
             {fehler && (
-              <p className="mt-4 rounded-lg border border-[#e8c4c4] bg-[#fbeaea] px-4 py-3 text-sm text-[#c23b3b]">
+              <p role="alert" className="mt-4 rounded-lg border border-[#e8c4c4] bg-[#fbeaea] px-4 py-3 text-sm text-[#9b2c2c]">
                 {fehler}
               </p>
             )}
 
             {transkript && (
-              <div className="mt-5">
-                <h3 className="mb-1.5 text-xs font-bold uppercase tracking-wider text-[#8a97a6]">
+              <div className="mt-6">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#526375]">
                   Erkanntes Transkript
                 </h3>
-                <p className="border-l-[3px] border-[#0078d4] pl-3 text-[15px] italic leading-relaxed text-[#5b6b7c]">
+                <p className="text-[15px] leading-relaxed text-[#18324d]">
                   {transkript}
                 </p>
               </div>
             )}
 
-            <p className="mt-6 border-t border-[#eef1f5] pt-4 text-xs leading-relaxed text-[#97a3b0]">
-              Die Aufnahme geht an einen Spracherkennungs-Dienst auf dem
-              werkflow-Server in Deutschland. Sie wird nicht an Google oder einen
-              anderen Anbieter weitergereicht und nicht gespeichert.
+            <p className="mt-6 text-xs leading-relaxed text-[#526375]">
+              Die Audioaufnahme wird auf dem werkflow-Server verarbeitet, nicht
+              an Drittanbieter weitergegeben und nicht gespeichert.
             </p>
           </section>
 
           {/* Rechts: Formular */}
-          <section className="rounded-2xl border border-[#d7e0ea] bg-white p-6 shadow-[0_8px_24px_rgba(13,45,80,0.06)]">
-            <h2 className="mb-1 text-lg font-bold text-[#0d2d50]">
-              2 · Anfrageformular
-            </h2>
-            <p className="mb-5 text-sm text-[#8a97a6]">
+          <section className="rounded-xl border border-[#dce3e9] bg-white p-5 sm:p-6">
+            <h2 className="text-lg font-semibold text-[#0d2d50]">Anfrageformular</h2>
+            <p className="mt-1 text-sm text-[#526375]">
               {anfrage
-                ? "Automatisch gefüllt. Leere Felder wurden nicht gesagt."
-                : "Wird nach der Aufnahme gefüllt."}
+                ? "Automatisch ausgefüllt; nicht genannte Angaben bleiben leer."
+                : "Wird nach der Aufnahme automatisch ausgefüllt."}
             </p>
 
             {!anfrage && (
-              <div className="space-y-3">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between border-b border-[#eef1f5] py-3"
-                  >
-                    <div className="h-3 w-24 rounded bg-[#eef2f6]" />
-                    <div className="h-3 w-32 rounded bg-[#f4f7fa]" />
-                  </div>
-                ))}
+              <div className="mt-6 border-t border-[#e7ebef] pt-8">
+                <p className="text-sm font-medium text-[#18324d]">Noch keine Anfrage erfasst</p>
+                <p className="mt-1 max-w-sm text-sm leading-relaxed text-[#526375]">
+                  Starten Sie eine Aufnahme. Die erkannten Angaben erscheinen anschließend hier.
+                </p>
               </div>
             )}
 
@@ -336,7 +344,7 @@ export default function SpracheClient({
                     </span>
                   )}
                   {anfrage.unsicher.length > 0 && (
-                    <span className="rounded-md bg-[#fdf3e3] px-2.5 py-1 text-xs font-bold text-[#a8730f]">
+                    <span className="rounded-md bg-[#fdf3e3] px-2.5 py-1 text-xs font-bold text-[#80540b]">
                       Undeutlich: {anfrage.unsicher.join(", ")}
                     </span>
                   )}
@@ -367,8 +375,8 @@ export default function SpracheClient({
                   <Zeile label="Adresse" wert={anfrage.adresse} />
                 )}
 
-                <h3 className="mb-1 mt-5 text-xs font-bold uppercase tracking-wider text-[#8a97a6]">
-                  Was möchte der Kunde
+                <h3 className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-[#526375]">
+                  Anliegen
                 </h3>
                 {anliegenLeer(anfrage.anliegen) ? (
                   <p className="rounded-lg bg-[#fbeaea] px-3 py-2.5 text-sm text-[#c23b3b]">
@@ -384,8 +392,8 @@ export default function SpracheClient({
                   ))
                 )}
 
-                <h3 className="mb-1 mt-5 text-xs font-bold uppercase tracking-wider text-[#8a97a6]">
-                  Termin und Zuweisung
+                <h3 className="mb-1 mt-5 text-xs font-semibold uppercase tracking-wide text-[#526375]">
+                  Termin und Zuständigkeit
                 </h3>
                 <Zeile
                   label="Fertig bis"
@@ -397,7 +405,7 @@ export default function SpracheClient({
             )}
           </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
@@ -418,24 +426,24 @@ function Zeile({
   unsicher?: boolean;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-[#eef1f5] py-3 last:border-b-0">
-      <span className="shrink-0 text-sm text-[#8a97a6]">{label}</span>
+    <div className="flex items-baseline justify-between gap-4 border-b border-[#e7ebef] py-3 last:border-b-0">
+      <span className="shrink-0 text-sm text-[#526375]">{label}</span>
       {wert ? (
-        <span className="text-right text-[15px] font-semibold text-[#0d2d50]">
+        <span className="text-right text-[15px] font-medium text-[#18324d]">
           {wert}
           {automatisch && (
-            <span className="ml-1.5 text-xs font-normal text-[#8a97a6]">
+            <span className="ml-1.5 text-xs font-normal text-[#526375]">
               automatisch
             </span>
           )}
           {unsicher && (
-            <span className="ml-1.5 text-xs font-normal text-[#a8730f]">
+            <span className="ml-1.5 text-xs font-normal text-[#80540b]">
               undeutlich
             </span>
           )}
         </span>
       ) : (
-        <span className="text-right text-sm italic text-[#b6c2cf]">
+        <span className="text-right text-sm text-[#627285]">
           nicht genannt
         </span>
       )}

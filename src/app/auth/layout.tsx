@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 // Metadata exportieren. Ohne dieses Layout erbt sie den Titel des Root-Layouts,
 // und im Browser-Tab stuende "Bauer GmbH" — der Demo-Betrieb der werkflow-Demo.
 export const metadata: Metadata = {
-  title: "Anmelden — AGRO-STAHL x werkflow",
+  title: "Anmelden | AGRO-STAHL",
   robots: { index: false, follow: false },
 };
 

@@ -5,9 +5,9 @@ import type { Metadata } from "next";
 // Root-Layouts — in einer Vorfuehrung fuer AGRO-STAHL stuende dann "Bauer GmbH"
 // im Browser-Tab.
 export const metadata: Metadata = {
-  title: "Spracherfassung — AGRO-STAHL x werkflow",
+  title: "Spracherfassung | AGRO-STAHL",
   description:
-    "Anfrage per Sprachnachricht erfassen und automatisch ins Anfrageformular uebernehmen.",
+    "Kundenanfragen per Sprachnachricht erfassen und als Anfrageformular aufbereiten.",
   robots: { index: false, follow: false },
 };
 
