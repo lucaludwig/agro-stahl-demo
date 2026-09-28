@@ -62,10 +62,32 @@ describe("zuweisungFuer", () => {
 });
 
 describe("fertigstellungMit", () => {
-  test("ein genannter Termin wird übernommen und nicht als Standard markiert", () => {
-    const ergebnis = fertigstellungMit("bis Ende nächster Woche");
-    assert.equal(ergebnis.wert, "bis Ende nächster Woche");
-    assert.equal(ergebnis.istStandard, false);
+  test("Ende nächster Woche wird ab Montag als konkreter Freitag angezeigt", () => {
+    assert.deepEqual(
+      fertigstellungMit("bis Ende nächster Woche", new Date("2026-09-28T08:00:00Z")),
+      { wert: "Freitag, 09.10.2026 (Ende nächster Woche)", istStandard: false },
+    );
+  });
+
+  test("Wiener Ortszeit entscheidet an der UTC-Tagesgrenze", () => {
+    assert.equal(
+      fertigstellungMit("Ende der nächsten Woche", new Date("2026-09-27T22:30:00Z")).wert,
+      "Freitag, 09.10.2026 (Ende nächster Woche)",
+    );
+  });
+
+  test("Jahreswechsel und Wochenende bleiben korrekt", () => {
+    assert.equal(
+      fertigstellungMit("bis Ende kommender Woche", new Date("2026-12-27T12:00:00Z")).wert,
+      "Freitag, 01.01.2027 (Ende nächster Woche)",
+    );
+  });
+
+  test("andere genannte Termine bleiben unverändert", () => {
+    assert.deepEqual(fertigstellungMit("bis Donnerstag"), {
+      wert: "bis Donnerstag",
+      istStandard: false,
+    });
   });
 
   test("ohne Termin greift die Standardfrist aus der Mail", () => {

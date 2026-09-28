@@ -14,6 +14,8 @@
 
 import { auth } from "@/lib/auth";
 import { hasPermission } from "@/lib/roles";
+import { audioDateiname } from "@/lib/audio";
+import { normalisiereFachwoerter } from "@/lib/transkript";
 
 const WHISPER_URL = process.env.WHISPER_URL;
 const WHISPER_TOKEN = process.env.WHISPER_TOKEN;
@@ -49,12 +51,21 @@ export async function POST(request: Request) {
   }
 
   const body = new FormData();
-  body.append("audio_file", audio, "aufnahme.webm");
+  body.append("audio_file", audio, audioDateiname(audio.type));
+
+  const whisperUrl = new URL(WHISPER_URL);
+  whisperUrl.searchParams.set("task", "transcribe");
+  whisperUrl.searchParams.set("language", "de");
+  whisperUrl.searchParams.set("output", "json");
+  whisperUrl.searchParams.set(
+    "initial_prompt",
+    "AGRO-STAHL, Wundschuh, Stahlblech, Kiwischieber, Kiwi-Erntemaschine, Schweißarbeit, Saubermacher.",
+  );
 
   let res: Response;
   try {
     res = await fetch(
-      `${WHISPER_URL}?task=transcribe&language=de&output=json`,
+      whisperUrl,
       {
         method: "POST",
         headers: { Authorization: `Bearer ${WHISPER_TOKEN}` },
@@ -101,5 +112,5 @@ export async function POST(request: Request) {
     );
   }
 
-  return Response.json({ text });
+  return Response.json({ text: normalisiereFachwoerter(text) });
 }

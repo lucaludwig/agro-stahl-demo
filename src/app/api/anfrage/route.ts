@@ -12,6 +12,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { hasPermission } from "@/lib/roles";
+import { normalisiereFachwoerter } from "@/lib/transkript";
 
 export const maxDuration = 120;
 
@@ -34,7 +35,7 @@ const AnfrageSchema = z.object({
     ),
   adresse: z.string().nullable().describe("nur wenn genannt"),
   anliegen: z.object({
-    material: z.string().nullable().describe("welches Material, wenn genannt"),
+    material: z.string().nullable().describe("genanntes Material exakt übernehmen; Stahlblech ist kein Streifenblech"),
     anfertigung: z.string().nullable().describe("was neu angefertigt wird"),
     reparatur: z.string().nullable().describe("was repariert werden soll"),
     produkt: z.string().nullable().describe("welches Produkt betroffen ist"),
@@ -81,7 +82,8 @@ Du bekommst das Transkript einer Sprachnachricht, die der Chef nach einem Kunden
 
 Regeln:
 - Trage nur ein, was tatsächlich gesagt wurde. Was nicht vorkommt, bleibt null. Rate nichts dazu, auch nicht Plausibles.
-- Die Spracherkennung verhört sich bei Fachbegriffen. Zieh sie im Kontext des Betriebs gerade: "Kivischieber" oder "Küwischieber" ist ein Kiwischieber, "Saubermacher" kann als Firmenname auftauchen.
+- Die Spracherkennung verhört sich bei Fachbegriffen. Zieh sie im Kontext des Betriebs gerade: "Kivischieber" oder "Küwischieber" ist ein Kiwischieber, "Streibblech" ist Stahlblech, niemals Streifenblech. "Saubermacher" kann als Firmenname auftauchen.
+- Übernimm genannte Materialien exakt. Stahlblech und Streifenblech sind unterschiedliche Materialien; ersetze sie nicht aufgrund einer Vermutung.
 - Bei Eigennamen von Kunden gilt das nicht: schreib sie so, wie sie im Transkript stehen, und nenn das Feld in "unsicher", wenn der Name undeutlich war. Ein falsch geratener Kundenname ist schlimmer als ein markierter.
 - Ein Preis oder Rabatt gehört nach "infos".
 - Angebot nur, wenn ausdrücklich eines verlangt wurde. Im Normalfall ist es ein Auftrag.`;
@@ -107,7 +109,7 @@ export async function POST(request: Request) {
   let transkript = "";
   try {
     const body = (await request.json()) as { transkript?: unknown };
-    transkript = typeof body.transkript === "string" ? body.transkript.trim() : "";
+    transkript = typeof body.transkript === "string" ? normalisiereFachwoerter(body.transkript.trim()) : "";
   } catch {
     return Response.json({ error: "Ungültige Anfrage." }, { status: 400 });
   }

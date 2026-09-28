@@ -30,7 +30,7 @@ export interface Anfrage {
   /** Laut Mail nur bei Neukunden relevant, und auch dort nur "wenn vorhanden". */
   adresse: string | null;
   anliegen: Anliegen;
-  /** Wörtlich wie gesagt ("bis Ende nächster Woche"), nicht in ein Datum geraten. */
+  /** Wörtlich extrahierter Termin; eindeutige relative Fristen werden angezeigt als Datum. */
   fertigstellung: string | null;
   /** Nur gesetzt, wenn in der Nachricht ein Mitarbeiter genannt wurde. */
   mitarbeiter: string | null;
@@ -48,9 +48,31 @@ export const STANDARD_FERTIGSTELLUNG = "2-3 Wochen (Standard)";
  */
 export function fertigstellungMit(
   genannt: string | null,
+  jetzt: Date = new Date(),
 ): { wert: string; istStandard: boolean } {
   const sauber = genannt?.trim();
   if (!sauber) return { wert: STANDARD_FERTIGSTELLUNG, istStandard: true };
+  if (/\bEnde\s+(?:der\s+)?(?:nächsten|nächster|kommenden|kommender)\s+Woche\b/i.test(sauber)) {
+    const teile = Object.fromEntries(
+      new Intl.DateTimeFormat("de-AT", {
+        timeZone: "Europe/Vienna",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).formatToParts(jetzt).map(({ type, value }) => [type, value]),
+    );
+    const freitag = new Date(Date.UTC(
+      Number(teile.year), Number(teile.month) - 1, Number(teile.day),
+    ));
+    const tageSeitMontag = (freitag.getUTCDay() + 6) % 7;
+    freitag.setUTCDate(freitag.getUTCDate() + 11 - tageSeitMontag);
+    const datum = [
+      String(freitag.getUTCDate()).padStart(2, "0"),
+      String(freitag.getUTCMonth() + 1).padStart(2, "0"),
+      String(freitag.getUTCFullYear()),
+    ].join(".");
+    return { wert: `Freitag, ${datum} (Ende nächster Woche)`, istStandard: false };
+  }
   return { wert: sauber, istStandard: false };
 }
 
@@ -105,6 +127,7 @@ export function anliegenLeer(anliegen: Anliegen): boolean {
 /** Datum der Anfrage — laut Mail "sollte vl. Automatisch gehen". */
 export function datumHeute(jetzt: Date = new Date()): string {
   return jetzt.toLocaleDateString("de-AT", {
+    timeZone: "Europe/Vienna",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

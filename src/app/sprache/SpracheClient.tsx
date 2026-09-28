@@ -14,6 +14,7 @@
 
 import { useRef, useState } from "react";
 import { signOut } from "next-auth/react";
+import { audioDateiname } from "@/lib/audio";
 import {
   anliegenLeer,
   datumHeute,
@@ -129,7 +130,7 @@ export default function SpracheClient({
     setPhase("transkribiert");
 
     const formData = new FormData();
-    formData.append("audio", audio, "aufnahme.webm");
+    formData.append("audio", audio, audioDateiname(audio.type));
 
     let text = "";
     try {
@@ -283,7 +284,7 @@ export default function SpracheClient({
             {transkript && (
               <div className="mt-5">
                 <h3 className="mb-1.5 text-xs font-bold uppercase tracking-wider text-[#8a97a6]">
-                  Wörtlich verstanden
+                  Erkanntes Transkript
                 </h3>
                 <p className="border-l-[3px] border-[#0078d4] pl-3 text-[15px] italic leading-relaxed text-[#5b6b7c]">
                   {transkript}
