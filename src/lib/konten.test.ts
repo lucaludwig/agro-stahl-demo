@@ -1,5 +1,10 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import bcrypt from "bcryptjs";
 import { findeKonto, kontenLesen, type Konto } from "./konten.ts";
 
 // Die Rollenprüfung wird hier eingespeist statt importiert: roles.ts zieht den
@@ -107,4 +112,23 @@ describe("findeKonto", () => {
   test("leere Eingabe ergibt null", () => {
     assert.equal(findeKonto(konten, "   "), null);
   });
+});
+
+test("ein vierstelliger Demo-Code gilt fuer alle erzeugten Konten", async () => {
+  const ordner = mkdtempSync(join(tmpdir(), "agro-konten-"));
+  const kontenDatei = join(ordner, "konten.json");
+  const zugaengeDatei = join(ordner, "zugaenge.txt");
+  try {
+    execFileSync(process.execPath, ["scripts/konten-erzeugen.mjs", kontenDatei, zugaengeDatei], {
+      env: { ...process.env, AGRO_DEMO_CODE: "1234" },
+    });
+    const konten = JSON.parse(readFileSync(kontenDatei, "utf8")) as Konto[];
+    assert.equal(konten.length, 4);
+    for (const konto of konten) {
+      assert.equal(await bcrypt.compare("1234", konto.hash), true);
+      assert.equal(await bcrypt.compare("0000", konto.hash), false);
+    }
+  } finally {
+    rmSync(ordner, { recursive: true, force: true });
+  }
 });

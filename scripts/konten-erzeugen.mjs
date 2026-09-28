@@ -16,6 +16,11 @@ if (!zielKonten || !zielPasswoerter) {
   console.error("Zwei Zielpfade angeben.");
   process.exit(1);
 }
+const demoCode = process.env.AGRO_DEMO_CODE;
+if (demoCode !== undefined && !/^\d{4}$/.test(demoCode)) {
+  console.error("AGRO_DEMO_CODE muss genau vier Ziffern enthalten.");
+  process.exit(1);
+}
 
 // Funktionsadressen statt geratener persoenlicher Postfaecher: bekannt aus der
 // Korrespondenz ist nur schloegl@ und info@. Eine erfundene Adresse fuer den
@@ -43,7 +48,7 @@ const konten = [];
 const zeilen = ["AGRO-STAHL Vorfuehrung — Zugaenge", ""];
 
 for (const person of PERSONEN) {
-  const passwort = passwortErzeugen();
+  const passwort = demoCode ?? passwortErzeugen();
   const hash = bcrypt.hashSync(passwort, 12);
   konten.push({ ...person, hash, active: true });
   zeilen.push(`${person.name} (${person.role})`);

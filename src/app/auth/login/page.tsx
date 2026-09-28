@@ -13,7 +13,7 @@ function Formular() {
   const router = useRouter();
   const suche = useSearchParams();
   const [email, setEmail] = useState("");
-  const [passwort, setPasswort] = useState("");
+  const [code, setCode] = useState("");
   const [fehler, setFehler] = useState<string | null>(null);
   const [laeuft, setLaeuft] = useState(false);
 
@@ -31,14 +31,14 @@ function Formular() {
 
     const ergebnis = await signIn("credentials", {
       email,
-      password: passwort,
+      password: code,
       redirect: false,
     });
 
     if (ergebnis?.error) {
       // Bewusst ohne Unterscheidung zwischen unbekannter Adresse und falschem
-      // Passwort — die Unterscheidung verrät, welche Adressen es gibt.
-      setFehler("E-Mail oder Passwort stimmt nicht.");
+      // Code — die Unterscheidung verrät, welche Adressen es gibt.
+      setFehler("E-Mail oder Code stimmt nicht.");
       setLaeuft(false);
       return;
     }
@@ -69,18 +69,22 @@ function Formular() {
 
       <div>
         <label
-          htmlFor="passwort"
+          htmlFor="code"
           className="mb-1.5 block text-sm font-semibold text-[#0d2d50]"
         >
-          Passwort
+          4-stelliger Code
         </label>
         <input
-          id="passwort"
+          id="code"
           type="password"
           autoComplete="current-password"
+          inputMode="numeric"
+          pattern="[0-9]{4}"
+          minLength={4}
+          maxLength={4}
           required
-          value={passwort}
-          onChange={(e) => setPasswort(e.target.value)}
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
           className="w-full rounded-lg border border-[#d7e0ea] px-3.5 py-2.5 text-[15px] text-[#0d2d50] outline-none focus:border-[#0078d4] focus:ring-2 focus:ring-[#0078d4]/20"
         />
       </div>
